@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, get, set, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+
 const firebaseConfig = {
     apiKey: "AIzaSyC6jn_lmqJOF8xmETFJHTS_jfvNd6Ym6DU",
     authDomain: "demo9-b51ef.firebaseapp.com",
@@ -16,186 +17,114 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const db = getDatabase(app);
-var arrayobj;
-var arrayobj1 = [];
-var testarrayobj;
-var arrayobj2 = [];
-var filearrayobj;
-var idname;
-document.getElementById("searchbtn").addEventListener('click', () => {
-    let sem = document.getElementById("searchbar").value;
-    let semstring = "12345678"
 
+let arrayobj, arrayobj1 = [], testarrayobj, arrayobj2 = [], filearrayobj;
+
+document.getElementById("searchbtn")?.addEventListener('click', () => {
+    let sem = document.getElementById("searchbar")?.value;
+    let semstring = "12345678"; // Valid semesters
+
+    // Check if semester input is valid
     if (semstring.includes(sem)) {
         const dbref = ref(db);
         let folder = document.getElementById("folderscon");
-        folder.style.display = "flex";
-        folder.innerHTML = "";
         let file = document.getElementById("filescon");
-        file.style.display = "none";
         let testfolder = document.getElementById("nestedfolderscon");
-        testfolder.style.display = "none";
 
-        var student = [];
+        // Reset folder, file, and test folder displays
+        if (folder) folder.style.display = "flex";
+        if (folder) folder.innerHTML = "";
+        if (file) file.style.display = "none";
+        if (testfolder) testfolder.style.display = "none";
 
         get(child(dbref, `questionpapertable/${sem}`)).then((snapshot) => {
-            // snapshot.forEach(childsnapshot => {
-            //     var student = childsnapshot.val();
-            //     const arrayobj = Object.entries(student).map(([key, value]) => ({ key, value }));
-            //     console.log(arrayobj[0].key);
-
-            //     //     // str = `name:${student.name}<br>age:${student.age}<br>`;
-            //     //     // console.log(str);
-            //     //     // result1.innerHTML += str;
-            //     //     // console.log(result1.value);
-
-
-            // });
-            student = snapshot.val();
+            let student = snapshot.val();
             arrayobj = Object.entries(student).map(([key, value]) => ({ key, value }));
 
-            let n = arrayobj.length
-            for (var i = 0; i < n; i++) {
-                console.log(arrayobj[i].key);
-                arrayobj1[i] = arrayobj[i].value;
+            arrayobj.forEach((item, i) => {
+                arrayobj1[i] = item.value;
+
+                // Create folder div for each item
                 let foldertemplate = document.createElement("div");
                 foldertemplate.className = "foldercon";
-
-                foldertemplate.innerHTML = ` 
-             <i class="fa-solid fa-folder"></i>
-             <h4>${arrayobj[i].key}</h4 >`;
-                folder.appendChild(foldertemplate);
+                foldertemplate.innerHTML = `<i class="fa-solid fa-folder"></i><h4>${item.key}</h4>`;
                 foldertemplate.id = i;
+                folder?.appendChild(foldertemplate);
 
-                let fo = document.getElementById(i);
-                foldertemplate.addEventListener('click', function () {
-
-                    console.log("folder", fo.id);
+                // Event listener for folder clicks
+                foldertemplate.addEventListener('click', () => {
                     let nestedfolderscon1 = document.getElementById("nestedfolderscon");
                     nestedfolderscon1.innerHTML = "";
                     nestedfolderscon1.style.display = "flex";
-                    let foldercon = document.getElementById("folderscon");
-                    folderscon.style.display = "none";
+                    folder.style.display = "none";
 
-                    testarrayobj = Object.entries(arrayobj1[fo.id]).map(([key, value]) => ({ key, value }))
-                    console.log(testarrayobj);
-                    for (var ni = 0; ni < testarrayobj.length; ni++) {
-                        // console.log(testarrayobj[ni].key + "ni" + ni);
-                        arrayobj2[ni] = testarrayobj[ni].value;
+                    testarrayobj = Object.entries(arrayobj1[foldertemplate.id]).map(([key, value]) => ({ key, value }));
+                    
+                    // Nested folder creation
+                    testarrayobj.forEach((nestedItem, ni) => {
+                        arrayobj2[ni] = nestedItem.value;
                         let nestedfolder = document.createElement("div");
                         nestedfolder.className = "nestedfolder";
                         nestedfolder.id = ni;
-                        console.log("class id init");
-                        nestedfolder.innerHTML = ` <i class="fa-solid fa-folder"></i>
-                    <h4>${testarrayobj[ni].key}</h4>`
+                        nestedfolder.innerHTML = `<i class="fa-solid fa-folder"></i><h4>${nestedItem.key}</h4>`;
                         nestedfolderscon1.appendChild(nestedfolder);
 
-                        nestedfolder.addEventListener('click', function () {
+                        // Event listener for nested folder
+                        nestedfolder.addEventListener('click', () => {
                             let filescon = document.getElementById("filescon");
                             filescon.innerHTML = "";
                             filescon.style.display = "flex";
-                            let nestedfoldercon1 = document.getElementById("nestedfolderscon")
-                            nestedfoldercon1.style.display = "none";
-                            filearrayobj = Object.entries(arrayobj2[nestedfolder.id]).map(([key, value]) => ({ key, value }))
-                            console.log(filearrayobj);
+                            nestedfolderscon1.style.display = "none";
+
+                            filearrayobj = Object.entries(arrayobj2[nestedfolder.id]).map(([key, value]) => ({ key, value }));
+                            
                             if (filearrayobj.length > 0) {
-                                for (var fi = 0; fi < filearrayobj.length; fi++) {
+                                // Create file icons for each PDF
+                                filearrayobj.forEach((fileItem, fi) => {
                                     let filecon = document.createElement("div");
-                                    filecon.id = fi;
                                     filecon.className = "filecon";
-                                    filecon.innerHTML = `<i class="fa-solid fa-file-pdf"></i>
-                            <h4>${filearrayobj[fi].key}</h4>
-                           `
+                                    filecon.id = fi;
+                                    filecon.innerHTML = `<i class="fa-solid fa-file-pdf"></i><h4>${fileItem.key}</h4>`;
                                     filescon.appendChild(filecon);
-                                    console.log(fi);
-                                    filecon.addEventListener('click', function () {
 
+                                    // Event listener for file PDF click
+                                    filecon.addEventListener('click', () => {
                                         let pdfcon = document.getElementById("pdfcon");
-                                        pdfcon.style.display = "block"
                                         pdfcon.innerHTML = "";
-                                        console.log(filearrayobj.length)
-
-                                        console.log(filearrayobj[filecon.id].value.url)
-                                        var fileurl = filearrayobj[filecon.id].value.url
-                                        console.log(fileurl)
-
+                                        pdfcon.style.display = "block";
+                                        let fileurl = filearrayobj[filecon.id].value.url;
+                                        
+                                        // Create iframe for PDF display
                                         let pdfframe = document.createElement("iframe");
                                         pdfframe.src = fileurl;
-
                                         pdfframe.id = "pdfdata";
+                                        pdfcon.appendChild(pdfframe);
+
+                                        // Close button for PDF view
                                         let pdfbtn = document.createElement("i");
                                         pdfbtn.className = "fa-solid fa-xmark";
                                         pdfbtn.id = "pdfbtn";
                                         pdfbtn.addEventListener('click', () => {
-                                            let pdfframe = document.getElementById("pdfdata");
-                                            console.log("clicked pdfbtn")
-                                            pdfframe.src = "";
-                                            document.getElementById("pdfbtn").style.display = "none";
-                                            document.getElementById("pdfcon").style.display = "none";
-                                        })
+                                            pdfcon.style.display = "none";
+                                            pdfframe.src = ""; // Remove src to stop loading
+                                        });
 
-                                        pdfcon.appendChild(pdfbtn)
-                                        pdfcon.appendChild(pdfframe);
-                                        console.log("completely displayed")
-
-                                    })
-
-                                }
-                            }
-                            else {
-                                filescon.style.display = "flex";
+                                        pdfcon.appendChild(pdfbtn);
+                                    });
+                                });
+                            } else {
                                 filescon.innerHTML = "<h1>No Files</h1>";
-                                console.log("no file");
                             }
-                        })
-                    }
-                })
-            }
-        })
+                        });
+                    });
+                });
+            });
+        });
+    } else {
+        window.open('main.html', '_self');
     }
-    else {
-        window.open('main.html', 'self');
-    }
-})
+});
 
-
-let menubtn = document.getElementById("homebtn");
-menubtn.addEventListener('click', () => {
-    window.open('main.html', 'self');
-})
-document.getElementById("addbtn").addEventListener('click', () => {
-    window.open('insertdata.html', 'self');
-})
-
-
-
-// let foldercon1 = document.getElementById("folderscon");
-// for (var i = 0; i < arrayobj.length; i++) {
-//     let fo = document.getElementById(i);
-//     folder[i].addEventListener('click', function () {
-//         console.log("folder", fo.id);
-//         let nestedfolderscon1 = document.getElementById("nestedfolderscon");
-//         nestedfolderscon1.style.display = "flex";
-//         let foldercon = document.getElementById("folderscon");
-//         folderscon.style.display = "none";
-
-//     })
-
-
-// }
-let nestedfoldercon1 = document.getElementsByClassName("nestedfolder");
-for (var j = 0; j < nestedfoldercon1.length; j++) {
-    nestedfoldercon1[j].id = j;
-    let nestedfo = document.getElementById(j);
-    nestedfoldercon1[j].addEventListener('click', function () {
-        console.log("nestedfolder", nestedfo.id);
-        let file = document.getElementById("filescon");
-        file.style.display = "flex";
-        let nestedfoldercon = document.getElementById("nestedfolderscon");
-        nestedfoldercon.style.display = "none";
-
-    })
-
-
-}
-
+// Event listeners for home and add buttons
+document.getElementById("homebtn")?.addEventListener('click', () => window.open('main.html', '_self'));
+document.getElementById("addbtn")?.addEventListener('click', () => window.open('insertdata.html', '_self'));
